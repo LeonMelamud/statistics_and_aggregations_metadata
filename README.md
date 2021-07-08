@@ -1,6 +1,4 @@
 
-
-
 # library that performs statistics and aggregations for file metadata
 
 # Required Functions
