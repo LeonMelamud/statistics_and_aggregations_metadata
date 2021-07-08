@@ -16,8 +16,12 @@ limitations under the License.
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -51,6 +55,90 @@ func init() {
 	// GetStatsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+// Number of files received
+// Largest file received (including name and size)
+// Average file size
+// Most frequent file extension (including number of occurences)
+// Percentage of text files of all files received
+// List of latest 10 file paths received
+func GetStats() {
+	fmt.Println("in GetStats")
+
+	if _, err := os.Stat("./FilesMetadata.json"); os.IsNotExist(err) {
+		if err != nil {
+			os.Exit(1)
+		}
+	}
+
+	byteValue, err := ioutil.ReadFile("./FilesMetadata.json")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	fmt.Println("Successfully Opened FilesMetadata.json")
+
+	filesMetadata := []FileMetadata{}
+
+	json.Unmarshal(byteValue, &filesMetadata)
+
+	fmt.Println(filesMetadata)
+
+	//if we need to get data from the files itSelf we will need to work with channels
+
+	// channel := make(chan fileMetadata)
+
+	// for _, metaData := range filesMetadata {
+
+	// 	go process_file(metaData.Path, channel)
+
+	// }
+	//for i := 0; i < len(filesMetadata); i++ {
+	//fmt.Println(<-channel)
+	//}
+
+	var sumOfSizes int64
+	//Number of files received
+	largestFileSize := filesMetadata[0].Size
+	//
+	largestFilePath := filesMetadata[0].Path
+
+	mapExt := make(map[string]int)
+	numOfFiles := len(filesMetadata)
+
+	for i := 0; i < numOfFiles; i++ {
+		fileSize := filesMetadata[i].Size
+		if largestFileSize < fileSize {
+			largestFileSize = fileSize
+			largestFilePath = filesMetadata[i].Path
+		}
+		fileExtension := filepath.Ext(filesMetadata[i].Path)
+		if _, ok := mapExt[fileExtension]; ok {
+			mapExt[fileExtension] += 1
+		} else {
+			mapExt[fileExtension] = 1
+		}
+		sumOfSizes += fileSize
+	}
+
+	fileStats := FileStats{}
+
+	fileStats.NumFiles = int64(numOfFiles)
+	//Average file size
+	fileStats.AverageFileSize = float64(sumOfSizes / int64(numOfFiles))
+	//Largest file received (including name and size)
+	largestFileInfo := LargestFileInfo{}
+	largestFileInfo.Path = largestFilePath
+	largestFileInfo.Size = largestFileSize
+	fileStats.LargestFile = largestFileInfo
+
+	//Most frequent file extension (including number of occurences)
+	fileStats.MostFrequentExt = mostFrequentExt(mapExt)
+
+	//TODO: Percentage of text files of all files received
+
+	//TODO: List of latest 10 file paths received
+}
+
 type FileStats struct {
 	NumFiles        int64           `json:"num_files"`
 	LargestFile     LargestFileInfo `json:"largest_file"`
@@ -66,20 +154,4 @@ type LargestFileInfo struct {
 type ExtInfo struct {
 	Extension      string `json:"extension"`
 	NumOccurrences int64  `json:"num_occurrences"`
-}
-
-// Number of files received
-// Largest file received (including name and size)
-// Average file size
-// Most frequent file extension (including number of occurences)
-// Percentage of text files of all files received
-// List of latest 10 file paths received
-func GetStats() {
-
-	if _, err := os.Stat("./FilesMetadata.json"); os.IsNotExist(err) {
-		check(err)
-	}
-
-	fmt.Println("in GetStats")
-
 }

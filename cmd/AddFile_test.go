@@ -12,7 +12,7 @@ func Test_ExecuteCommand(t *testing.T) {
 	fmt.Printf("useDarToTest content is %s\n", s)
 	data := FileMetadata{}
 	json.Unmarshal([]byte(s), &data)
-	fmt.Printf("Operation: %s , %i , %b", data.Path, data.Size, data.IsBinary)
+	fmt.Printf("Operation: %s , %d , %t", data.Path, data.Size, data.IsBinary)
 	getFile(data)
 
 }

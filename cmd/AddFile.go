@@ -16,9 +16,11 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	//"sync"
 	"encoding/json"
@@ -32,20 +34,21 @@ var userinput string
 // AddFileCmd represents the AddFile command
 var AddFileCmd = &cobra.Command{
 	Use:   "AddFile",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "The function receives a structure containing the metadata of one file",
+	Long: `The function receives a structure containing the metadata of one file. This file should be taken into account
+	when calculating statistics. The function can return an error if the input is invalid or processing of the file fails.
+	"{path": "../README.md", "size": "2323232",is_binary:false}`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		fmt.Printf("userinput content is %s\n", rootCmd.Flag("userinput").Value)
 		// define slice of FileMetadata
 		data := FileMetadata{}
 		json.Unmarshal([]byte(userinput), &data)
-		getFile(data)
+		err := getFile(data)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	},
 }
 
@@ -71,21 +74,21 @@ type FileMetadata struct {
 	IsBinary bool   `json:"is_binary"` // whether the file is a binary file or a simple text file
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
+var fileMutex sync.Mutex
+
 func getFile(metadata FileMetadata) error {
+	fileMutex.Lock() // Use a single mutex to serialize all access to file
 	if _, err := os.Stat("./FilesMetadata.json"); os.IsNotExist(err) {
 		f, err := os.Create("./FilesMetadata.json")
-		check(err)
+		if err != nil {
+			return errors.New(err.Error())
+		}
 		defer f.Close()
 	}
+
 	byteValue, err := ioutil.ReadFile("./FilesMetadata.json")
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		return errors.New(err.Error())
 	}
 
 	fmt.Println("Successfully Opened FilesMetadata.json")
@@ -111,14 +114,14 @@ func getFile(metadata FileMetadata) error {
 
 	//TODO : append the real metadata
 	if metadata.Path != "" && metadata.Size != 0 {
-		panic("metadata is not correct")
+		return errors.New("metadata is not correct")
 	}
 
 	filesMetadata = append(filesMetadata, file1, file2)
 	fmt.Println("file array : ", filesMetadata)
 	j, err := json.Marshal(filesMetadata)
 	if err != nil {
-		log.Fatalf("Error occured during marshaling. Error: %s", err.Error())
+		return errors.New("error occured during marshaling. error")
 	}
 	// define slice of FileMetadata
 	var jsonStruct []FileMetadata
@@ -130,8 +133,11 @@ func getFile(metadata FileMetadata) error {
 
 	file, _ := json.MarshalIndent(jsonStruct, "", " ")
 
-	err = ioutil.WriteFile("aquaStatistic.json", file, 0775)
+	err = ioutil.WriteFile("FilesMetadata.json", file, 0775)
 	if err != nil {
-		log.Println(err)
+		return errors.New(err.Error())
 	}
+
+	defer fileMutex.Unlock() //unlock even if there an error
+	return nil
 }

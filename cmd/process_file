@@ -1,0 +1,25 @@
+// package cmd
+
+// import (
+// 	"encoding/json"
+// 	"io/ioutil"
+// )
+
+// type Filedata struct {
+// 	Size              int64
+// 	Path              string
+// 	extensionFromFile string // for preventing malware need to know the type of file from inside the file and not from the name
+
+// }
+
+// func process_file(filePath string, channel chan Filedata) {
+
+// 	byteValue, err := ioutil.ReadFile(filePath)
+// 	if err != nil {
+
+// 	}
+// 	//TODO: get fileData from the file itself
+// 	fileMetadata := Filedata{}
+// 	json.Unmarshal(byteValue, &fileMetadata)
+// 	channel <- fileMetadata
+// }
