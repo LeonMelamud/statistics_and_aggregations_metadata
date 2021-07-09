@@ -16,13 +16,35 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	"log"
 	"os"
+	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
-
-	"github.com/spf13/viper"
 )
+
+type FileMetadata struct {
+	Path     string `json:"path"`      // the file's absolute path
+	Size     int64  `json:"size"`      // the file size in bytes
+	IsBinary bool   `json:"is_binary"` // whether the file is a binary file or a simple text file
+}
+type FileStats struct {
+	NumFiles        int64           `json:"num_files"`
+	LargestFile     LargestFileInfo `json:"largest_file"`
+	AverageFileSize float64         `json:"avg_file_size"`
+	MostFrequentExt ExtInfo         `json:"most_frequent_ext"`
+	TextPercentage  float32         `json:"text_percentage"`
+	MostRecentPaths []string        `json:"most_recent_paths"`
+}
+type LargestFileInfo struct {
+	Path string `json:"path"`
+	Size int64  `json:"size"`
+}
+type ExtInfo struct {
+	Extension      string `json:"extension"`
+	NumOccurrences int64  `json:"num_occurrences"`
+}
 
 var cfgFile string
 
@@ -31,9 +53,6 @@ var rootCmd = &cobra.Command{
 	Use:   "aquaStatistic",
 	Short: "library that performs statistics and aggregations for file metadata",
 	Long:  ``,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -48,7 +67,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.aquaStatistic.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config.yaml)")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
@@ -57,25 +76,25 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	fmt.Println("inside initConfig on root")
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	if strings.Contains(wd, "cmd") {
+
+		err := godotenv.Load("../config.env")
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".aquaStatistic" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".aquaStatistic")
+		err := godotenv.Load("./config.env")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+}
+func GetEnvWithKey(key string) string {
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
+	return os.Getenv(key)
 }

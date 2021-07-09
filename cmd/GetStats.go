@@ -26,23 +26,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// GetStatsCmd represents the GetStats command
-var GetStatsCmd = &cobra.Command{
-	Use:   "GetStats",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+var rm string
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("GetStats called")
-	},
+// GetStatsCmd represents the GetStats command
+func GetStatsCmd() *cobra.Command {
+	getStatsCmd := &cobra.Command{
+		Use:   "GetStats",
+		Short: "This function returns statistics for all files added until that point",
+		Long: `This function returns statistics for all files added until that point. The following statistics should be returned:
+	Number of files received
+	Largest file received (including name and size)
+	Average file size
+	Most frequent file extension (including number of occurences)
+	Percentage of text files of all files received
+	List of latest 10 file paths received.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("GetStats called")
+
+			//fmt.Printf("remove file flag is %s\n", cmd.Flag("rm").Value)
+
+			fileStats := GetStats()
+
+			cmd.Println("JSON format : \n", fileStats)
+			//return jsonStruct
+			return nil
+		},
+	}
+	getStatsCmd.Flags().StringVar(&rm, "rm", "", "getStatsCmd clear MetaData file")
+	return getStatsCmd
 }
 
 func init() {
-	rootCmd.AddCommand(GetStatsCmd)
+	getStatsCmd := GetStatsCmd()
+	rootCmd.AddCommand(getStatsCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -55,33 +71,24 @@ func init() {
 	// GetStatsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-// Number of files received
-// Largest file received (including name and size)
-// Average file size
-// Most frequent file extension (including number of occurences)
-// Percentage of text files of all files received
-// List of latest 10 file paths received
-func GetStats() {
-	fmt.Println("in GetStats")
-
-	if _, err := os.Stat("./FilesMetadata.json"); os.IsNotExist(err) {
+func GetStats() string {
+	if _, err := os.Stat(GetEnvWithKey("METADATA_FILE_PATH")); os.IsNotExist(err) {
 		if err != nil {
 			os.Exit(1)
 		}
 	}
-
-	byteValue, err := ioutil.ReadFile("./FilesMetadata.json")
+	byteValue, err := ioutil.ReadFile(GetEnvWithKey("METADATA_FILE_PATH"))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	fmt.Println("Successfully Opened FilesMetadata.json")
+	fmt.Println("GetStats", "Successfully Opened FilesMetadata.json")
 
 	filesMetadata := []FileMetadata{}
 
 	json.Unmarshal(byteValue, &filesMetadata)
 
-	fmt.Println(filesMetadata)
+	fmt.Println("GetStats ,filesMetadata structs : ", filesMetadata, "\n")
 
 	//if we need to get data from the files itSelf we will need to work with channels
 
@@ -96,7 +103,7 @@ func GetStats() {
 	//fmt.Println(<-channel)
 	//}
 
-	var sumOfSizes int64
+	var sumOfSizes float64
 	//Number of files received
 	largestFileSize := filesMetadata[0].Size
 	//
@@ -104,6 +111,7 @@ func GetStats() {
 
 	mapExt := make(map[string]int)
 	numOfFiles := len(filesMetadata)
+	latest10Pates := make([]string, 10)
 
 	for i := 0; i < numOfFiles; i++ {
 		fileSize := filesMetadata[i].Size
@@ -112,46 +120,38 @@ func GetStats() {
 			largestFilePath = filesMetadata[i].Path
 		}
 		fileExtension := filepath.Ext(filesMetadata[i].Path)
-		if _, ok := mapExt[fileExtension]; ok {
-			mapExt[fileExtension] += 1
+		if val, ok := mapExt[fileExtension]; ok {
+			mapExt[fileExtension] = val + 1
 		} else {
 			mapExt[fileExtension] = 1
 		}
-		sumOfSizes += fileSize
+		if i < 10 {
+			latest10Pates[i] = filesMetadata[i].Path
+		}
+		sumOfSizes += float64(fileSize)
 	}
 
 	fileStats := FileStats{}
-
+	//Number of files received
 	fileStats.NumFiles = int64(numOfFiles)
 	//Average file size
-	fileStats.AverageFileSize = float64(sumOfSizes / int64(numOfFiles))
+	fileStats.AverageFileSize = sumOfSizes / float64(numOfFiles)
 	//Largest file received (including name and size)
 	largestFileInfo := LargestFileInfo{}
 	largestFileInfo.Path = largestFilePath
 	largestFileInfo.Size = largestFileSize
 	fileStats.LargestFile = largestFileInfo
-
 	//Most frequent file extension (including number of occurences)
 	fileStats.MostFrequentExt = mostFrequentExt(mapExt)
+	//Percentage of text files of all files received
+	numberOfTxtFiles := mapExt[".txt"]
+	fileStats.TextPercentage = float32(numberOfTxtFiles/numOfFiles) * 100
+	//List of latest 10 file paths received
+	fileStats.MostRecentPaths = latest10Pates[:numOfFiles]
 
-	//TODO: Percentage of text files of all files received
-
-	//TODO: List of latest 10 file paths received
-}
-
-type FileStats struct {
-	NumFiles        int64           `json:"num_files"`
-	LargestFile     LargestFileInfo `json:"largest_file"`
-	AverageFileSize float64         `json:"avg_file_size"`
-	MostFrequentExt ExtInfo         `json:"most_frequent_ext"`
-	TextPercentage  float32         `json:"text_percentage"`
-	MostRecentPaths []string        `json:"most_recent_paths"`
-}
-type LargestFileInfo struct {
-	Path string `json:"path"`
-	Size int64  `json:"size"`
-}
-type ExtInfo struct {
-	Extension      string `json:"extension"`
-	NumOccurrences int64  `json:"num_occurrences"`
+	j, err := json.Marshal(fileStats)
+	if err != nil {
+		log.Fatal("json Marshal error")
+	}
+	return string(j)
 }

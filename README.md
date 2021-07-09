@@ -1,5 +1,25 @@
 
 # library that performs statistics and aggregations for file metadata
+# Usage 
+
+Stage 1 -- Create a unit test for the library
+$ cd cmd
+$ go test
+
+Stage 2
+
+<p>cd to root folder</p>
+$go install aquaStatistic
+$go run aquaStatistic --help
+
+<p>addFile with path,size,is_binary</p>
+$go run aquaStatistic AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
+
+<p>GetStats() in JSON format when input ends.</p>
+$ go run aquaStatistic GetStats
+
+Bonus: create a Dockerfile for the executable.
+.dockerfile
 
 # Required Functions
 
