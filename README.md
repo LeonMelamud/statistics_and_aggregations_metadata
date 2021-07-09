@@ -1,27 +1,30 @@
 
-# library that performs statistics and aggregations for file metadata
-# Usage 
+#  Library that performs statistics and aggregations for file metadata
+## Usage 
 
-Stage 1 -- Create a unit test for the library
+####STAGE 1 
+**CREATE A UNIT TEST FOR THE LIBRARY**
+```bash
 $ cd cmd
 $ go test
+```
 
-Stage 2
+ #### STAGE 2
 
-<p>cd to root folder</p>
+**cd to root folder**
 ```bash
 $go install aquaStatistic
 $go run aquaStatistic --help // show the commands
 ```
-<p>addFile with path,size,is_binary</p>
+**addFile with path,size,is_binary**
 ```bash
 $go run aquaStatistic AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
 ```
-<p>GetStats() in JSON format when input ends.</p>
+**GetStats() in JSON format when input ends.**
 ```bash
 $ go run aquaStatistic GetStats
 ```
-<p>to create executable</p>
+**to create executable**
 ```bash
 //go to root directory
 $go build -o ./bin/aquastatistic .
@@ -29,12 +32,12 @@ $./bin/aquastatistic AddFile '{"path":"../README.md","size":2343,"is_binary":fal
 $./bin/aquastatistic GetStats
 ```
 
-<p>Bonus: create a Dockerfile for the executable.</p>
+#### Bonus: create a Dockerfile for the executable.
 ```bash
-//see .dockerfile
+//see .Dockerfile, build from root folder
 $docker build --file ./Dockerfile -t aquastatistic_prod .
 
-//need to use Use a volume to share the file
+//need to use a volume to share the file
 $docker run -it -v /tmp:/root aquastatistic_prod AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
 $docker run -it -v /tmp:/root aquastatistic_prod GetStats
 ```
@@ -43,12 +46,12 @@ $docker run -it -v /tmp:/root aquastatistic_prod GetStats
 
 # Required Functions
 
-<p>AddFile(metadata FileMetadata) error</p>
+**AddFile(metadata FileMetadata) error**
 
 The function receives a structure containing the metadata of one file. This file should be taken into account
 when calculating statistics. The function can return an error if the input is invalid or processing of the file fails.
 
- <p><GetStats() FileStats</p>
+ **GetStats() FileStats**
 
 This function returns statistics for all files added until that point. The following statistics should be returned:
 
@@ -59,7 +62,7 @@ Most frequent file extension (including number of occurences)
 Percentage of text files of all files received
 List of latest 10 file paths received
 # Required Types/Structures
-
+##Stage 1:
 The following structures should be used by the library:
 ```bash
 
@@ -87,7 +90,7 @@ type ExtInfo struct {
     NumOccurrences int64 `json:"num_occurrences"`
 }
 ```
-# Guidelines:
+## Guidelines:
 
 The library MAY define a structure/type/object on which the two required functions are to be called.
 
@@ -95,11 +98,8 @@ There is no guarantee that calls to AddFile() will happen sequentially.
 
 Create a unit test for the library
 
-# #Stage 2:
+##Stage 2:
 Create a command line utility to uses the library. The utility reads a list of file metadata from standard input,
 where each line is a JSON representation of the metadata. The utility calls AddFile() for each line, and finally
 prints the output of GetStats() in JSON format when input ends.
 Bonus: create a Dockerfile for the executable.
-
-docker run -it -v /tmp:/root aquastatistic_prod AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
-docker run -it -v /tmp:/root aquastatistic_prod GetStats
