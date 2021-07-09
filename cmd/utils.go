@@ -1,7 +1,15 @@
 package cmd
 
-import "sort"
+import (
+	"os"
+	"sort"
+)
 
+func GetEnvWithKey(key string) string {
+
+	// return the env variable using os package
+	return os.Getenv(key)
+}
 func mostFrequentExt(m map[string]int) ExtInfo {
 	var maping []kv
 	for k, v := range m {

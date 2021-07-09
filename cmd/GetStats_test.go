@@ -29,15 +29,11 @@ func Test_GetStats(t *testing.T) {
 	b := bytes.NewBufferString("")
 
 	cmd.SetOut(b)
-	//cmd.SetArgs([]string{s})
 	cmd.Execute()
 	out, err := ioutil.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println("Test_GetStats result: ", string(out))
-	// if string(out) != s {
-	// 	t.Fatalf("expected \"%s\" got \"%s\"", s, string(out))
-	// }
 
 }

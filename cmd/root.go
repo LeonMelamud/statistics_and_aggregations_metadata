@@ -16,11 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"log"
-	"os"
-	"strings"
-
-	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
@@ -47,6 +42,7 @@ type ExtInfo struct {
 }
 
 var cfgFile string
+var METADATA_FILE_PATH = UserHomeDir() + "/FilesMetadata.json"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -76,25 +72,5 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	wd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	if strings.Contains(wd, "cmd") {
 
-		err := godotenv.Load("../config.env")
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		err := godotenv.Load("./config.env")
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-}
-func GetEnvWithKey(key string) string {
-
-	return os.Getenv(key)
 }

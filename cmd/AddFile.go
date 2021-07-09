@@ -54,7 +54,7 @@ func AddFileCmd() *cobra.Command {
 			if err != nil {
 				log.Fatal(err)
 			}
-			cmd.Println("done adding file to:", GetEnvWithKey("METADATA_FILE_PATH"))
+			cmd.Println("done adding file to:", METADATA_FILE_PATH)
 			return nil
 		},
 	}
@@ -65,32 +65,21 @@ func AddFileCmd() *cobra.Command {
 func init() {
 	addFileCmd := AddFileCmd()
 	rootCmd.AddCommand(addFileCmd)
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// AddFileCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// AddFileCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	//rootCmd.PersistentFlags().StringVarP(&userinput, "userinput", "u", "", "userinput json configuration ")
-
 }
 
 var fileMutex sync.Mutex
 
 func getFile(metadata FileMetadata) error {
 	fileMutex.Lock() // Use a single mutex to serialize all access to file
-	if _, err := os.Stat(GetEnvWithKey("METADATA_FILE_PATH")); os.IsNotExist(err) {
-		f, err := os.Create(GetEnvWithKey("METADATA_FILE_PATH"))
+	if _, err := os.Stat(METADATA_FILE_PATH); os.IsNotExist(err) {
+		f, err := os.Create(METADATA_FILE_PATH)
 		if err != nil {
 			return errors.New(err.Error())
 		}
 		defer f.Close()
 	}
 
-	byteValue, err := ioutil.ReadFile(GetEnvWithKey("METADATA_FILE_PATH"))
+	byteValue, err := ioutil.ReadFile(METADATA_FILE_PATH)
 	if err != nil {
 		return errors.New(err.Error())
 	}
@@ -102,12 +91,6 @@ func getFile(metadata FileMetadata) error {
 		if err := json.Unmarshal(byteValue, &filesMetadata); err != nil {
 			return errors.New("error occured during Unmarshal. error")
 		}
-		// for i := 0; i < len(filesMetadata); i++ {
-		// 	fmt.Println("Path: ", filesMetadata[i].Path)
-		// 	fmt.Println("Size: ", filesMetadata[i].Size)
-		// 	fmt.Println("IsBinary: ", filesMetadata[i].IsBinary)
-
-		// }
 	}
 	if metadata.Path == "" && metadata.Size == 0 {
 		return errors.New("metadata is not correct")
@@ -129,7 +112,7 @@ func getFile(metadata FileMetadata) error {
 
 	file, _ := json.MarshalIndent(jsonStruct, "", " ")
 
-	err = ioutil.WriteFile(GetEnvWithKey("OUTPUT_META_DATA"), file, 0775)
+	err = ioutil.WriteFile(METADATA_FILE_PATH, file, 0775)
 	if err != nil {
 		return errors.New(err.Error())
 	}

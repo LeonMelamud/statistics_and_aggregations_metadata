@@ -9,17 +9,37 @@ $ go test
 Stage 2
 
 <p>cd to root folder</p>
+```bash
 $go install aquaStatistic
-$go run aquaStatistic --help
-
+$go run aquaStatistic --help // show the commands
+```
 <p>addFile with path,size,is_binary</p>
+```bash
 $go run aquaStatistic AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
-
+```
 <p>GetStats() in JSON format when input ends.</p>
+```bash
 $ go run aquaStatistic GetStats
+```
+<p>to create executable</p>
+```bash
+//go to root directory
+$go build -o ./bin/aquastatistic .
+$./bin/aquastatistic AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
+$./bin/aquastatistic GetStats
+```
 
-Bonus: create a Dockerfile for the executable.
-.dockerfile
+<p>Bonus: create a Dockerfile for the executable.</p>
+```bash
+//see .dockerfile
+$docker build --file ./Dockerfile -t aquastatistic_prod .
+
+//need to use Use a volume to share the file
+$docker run -it -v /tmp:/root aquastatistic_prod AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
+$docker run -it -v /tmp:/root aquastatistic_prod GetStats
+```
+
+
 
 # Required Functions
 
@@ -80,3 +100,6 @@ Create a command line utility to uses the library. The utility reads a list of f
 where each line is a JSON representation of the metadata. The utility calls AddFile() for each line, and finally
 prints the output of GetStats() in JSON format when input ends.
 Bonus: create a Dockerfile for the executable.
+
+docker run -it -v /tmp:/root aquastatistic_prod AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
+docker run -it -v /tmp:/root aquastatistic_prod GetStats

@@ -72,12 +72,12 @@ func init() {
 }
 
 func GetStats() string {
-	if _, err := os.Stat(GetEnvWithKey("METADATA_FILE_PATH")); os.IsNotExist(err) {
+	if _, err := os.Stat(METADATA_FILE_PATH); os.IsNotExist(err) {
 		if err != nil {
-			os.Exit(1)
+			log.Fatal(err.Error())
 		}
 	}
-	byteValue, err := ioutil.ReadFile(GetEnvWithKey("METADATA_FILE_PATH"))
+	byteValue, err := ioutil.ReadFile(METADATA_FILE_PATH)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -88,20 +88,7 @@ func GetStats() string {
 
 	json.Unmarshal(byteValue, &filesMetadata)
 
-	fmt.Println("GetStats ,filesMetadata structs : ", filesMetadata, "\n")
-
-	//if we need to get data from the files itSelf we will need to work with channels
-
-	// channel := make(chan fileMetadata)
-
-	// for _, metaData := range filesMetadata {
-
-	// 	go process_file(metaData.Path, channel)
-
-	// }
-	//for i := 0; i < len(filesMetadata); i++ {
-	//fmt.Println(<-channel)
-	//}
+	fmt.Println("GetStats ,filesMetadata structs : ", filesMetadata)
 
 	var sumOfSizes float64
 	//Number of files received
@@ -147,8 +134,11 @@ func GetStats() string {
 	numberOfTxtFiles := mapExt[".txt"]
 	fileStats.TextPercentage = float32(numberOfTxtFiles/numOfFiles) * 100
 	//List of latest 10 file paths received
-	fileStats.MostRecentPaths = latest10Pates[:numOfFiles]
-
+	if numOfFiles < 10 {
+		fileStats.MostRecentPaths = latest10Pates[:numOfFiles]
+	} else {
+		fileStats.MostRecentPaths = latest10Pates
+	}
 	j, err := json.Marshal(fileStats)
 	if err != nil {
 		log.Fatal("json Marshal error")

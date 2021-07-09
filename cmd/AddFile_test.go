@@ -29,14 +29,14 @@ func addFile(t *testing.T, rm string, args []string) {
 		t.Fatal(err)
 	}
 	if rm == "" {
-		e := os.Remove(string(GetEnvWithKey("METADATA_FILE_PATH")))
+		e := os.Remove(METADATA_FILE_PATH)
 
 		if e != nil {
 			t.Fatal(e)
 		}
 	}
-	result := string("done adding file to: " + GetEnvWithKey("METADATA_FILE_PATH"))
-	if !strings.Contains(string(out), GetEnvWithKey("METADATA_FILE_PATH")) {
+	result := string("done adding file to: " + METADATA_FILE_PATH)
+	if !strings.Contains(string(out), METADATA_FILE_PATH) {
 		t.Fatalf("expected \"%s\" got \"%s\"", result, string(out))
 	}
 
