@@ -22,7 +22,7 @@ func Test_GetStats(t *testing.T) {
 		string(`{"path":"8.md5","size":8888,"is_binary":false}`),
 		string(`{"path":"9.cer","size":9999,"is_binary":false}`),
 		string(`{"path":"10.cer","size":101010,"is_binary":true}`),
-		string(`{"path":"11.cer","size":111111,"is_binary":true}`),
+		string(`{"path":"11.env","size":111111,"is_binary":true}`),
 		string(`{"path":".12.json","size":121212,"is_binary":false}`),
 	}
 	//we passing yes to remove the file so next time we will have
@@ -47,7 +47,8 @@ func Test_GetStats(t *testing.T) {
 	//if one of them is not the same as result it fail
 	if fileStats.NumFiles != 12 || fileStats.LargestFile.
 		Path != ".12.json" || fileStats.LargestFile.Size != 121212 || fileStats.AverageFileSize != 31944 || fileStats.MostFrequentExt.
-		Extension != ".cer" || fileStats.MostFrequentExt.NumOccurrences != 3 || fileStats.TextPercentage != 0 || len(fileStats.MostRecentPaths) != 10 {
+		NumOccurrences != 3 || fileStats.TextPercentage != 0 || len(fileStats.MostRecentPaths) != 10 || fileStats.MostFrequentExt.
+		Extension != ".md" {
 
 		t.Fatal("fileStats Data is not correct, got : " + string(out))
 	}
