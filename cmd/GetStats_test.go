@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"testing"
@@ -10,7 +11,8 @@ import (
 func Test_GetStats(t *testing.T) {
 	//need to populate the file first
 	args := []string{
-		string(`{"path":"1.txt","size":1111,"is_binary":false}`),
+		//testingArgs will be tested in AddFile and they need to be the samre as we test the index 0
+		string(testingArgs),
 		string(`{"path":"2.txt","size":2222,"is_binary":true}`),
 		string(`{"path":"3.md","size":3333,"is_binary":true}`),
 		string(`{"path":"4.md","size":4444,"is_binary":true}`),
@@ -23,6 +25,7 @@ func Test_GetStats(t *testing.T) {
 		string(`{"path":"11.cer","size":111111,"is_binary":true}`),
 		string(`{"path":".12.json","size":121212,"is_binary":false}`),
 	}
+	//we passing yes to remove the file so next time we will have
 	addFile(t, "yes", args)
 
 	cmd := GetStatsCmd()
@@ -34,6 +37,20 @@ func Test_GetStats(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("Test_GetStats result: ", string(out))
+	fileStats := FileStats{}
+	if err := json.Unmarshal(out, &fileStats); err != nil {
+		fmt.Println(fmt.Errorf("AddFileCmd , error unmarshaling data '%v': %v", fileStats, err.Error()))
+		t.Fatal(err)
+	}
+	fmt.Println("cmd result: ", string(out))
+
+	if fileStats.NumFiles != 12 && fileStats.LargestFile.
+		Path != ".12.json" && fileStats.LargestFile.Size != 121212 && fileStats.AverageFileSize != 31944 && fileStats.MostFrequentExt.
+		Extension != ".md" && fileStats.MostFrequentExt.NumOccurrences != 3 && fileStats.TextPercentage != 0 && len(fileStats.MostRecentPaths) != 10 {
+
+		t.Fatal("fileStats Data is not correct, got : " + string(out))
+	}
+
+	fmt.Println("Test_GetStats: Done")
 
 }

@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
@@ -41,9 +42,6 @@ func AddFileCmd() *cobra.Command {
 	when calculating statistics. The function can return an error if the input is invalid or processing of the file fails.
 	"{path": "../README.md", "size": "2323232",is_binary:false}`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//fmt.Printf("userinput content is %s\n", rootCmd.Flag("FileMetadata").Value)
-			// define slice of FileMetadata
-			//fmt.Fprintf(cmd.OutOrStdout(), in)
 			data := FileMetadata{}
 			if err := json.Unmarshal([]byte(args[0]), &data); err != nil {
 				fmt.Println(fmt.Errorf("AddFileCmd , error unmarshaling data '%v': %v", data, err.Error()))
@@ -54,7 +52,8 @@ func AddFileCmd() *cobra.Command {
 			if err != nil {
 				log.Fatal(err)
 			}
-			cmd.Println("done adding file to:", METADATA_FILE_PATH)
+			color.Blue.Printf("set json file to directory : " + "\n")
+			color.LightMagenta.Printf(METADATA_FILE_PATH + "\n")
 			return nil
 		},
 	}
@@ -84,8 +83,6 @@ func getFile(metadata FileMetadata) error {
 		return errors.New(err.Error())
 	}
 
-	fmt.Println("getFile, Successfully Opened FilesMetadata.json")
-
 	filesMetadata := []FileMetadata{}
 	if len(byteValue) > 0 {
 		if err := json.Unmarshal(byteValue, &filesMetadata); err != nil {
@@ -108,8 +105,8 @@ func getFile(metadata FileMetadata) error {
 		log.Println(err)
 		return errors.New("error occured during Unmarshal. error")
 	}
-	fmt.Println("getFile, json unmarshell to struct  : ", jsonStruct)
-
+	color.Cyan.Printf("getFile, json unmarshell to struct  : ")
+	color.Tag("info").Println(jsonStruct)
 	file, _ := json.MarshalIndent(jsonStruct, "", " ")
 
 	err = ioutil.WriteFile(METADATA_FILE_PATH, file, 0775)

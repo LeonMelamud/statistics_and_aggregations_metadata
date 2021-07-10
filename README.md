@@ -2,16 +2,17 @@
 #  Library that performs statistics and aggregations for file metadata
 ## Usage 
 
-####STAGE 1 
+ #### STAGE 1
+
 **CREATE A UNIT TEST FOR THE LIBRARY**
 ```bash
-$ cd cmd
+$ cd cmd //inside the root project folder
 $ go test
 ```
 
  #### STAGE 2
 
-**cd to root folder**
+**cd to root project folder**
 ```bash
 $go install aquaStatistic
 $go run aquaStatistic --help // show the commands
@@ -23,27 +24,35 @@ $go run aquaStatistic AddFile '{"path":"../README.md","size":2343,"is_binary":fa
 **GetStats() in JSON format when input ends.**
 ```bash
 $ go run aquaStatistic GetStats
+//to remove the file in the end of the work add flag --rm true
+$go run aquaStatistic GetStats --rm true 
 ```
 **to create executable**
 ```bash
-//go to root directory
+//go to root project directory
 $go build -o ./bin/aquastatistic .
+
+//test the executable
 $./bin/aquastatistic AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
 $./bin/aquastatistic GetStats
+//to remove the file in the end of the work add flag --rm true
+$./bin/aquastatistic GetStats --rm true 
 ```
 
 #### Bonus: create a Dockerfile for the executable.
 ```bash
 //see .Dockerfile, build from root folder
+//check that the file is exsist ./bin/aquastatistic 
 $docker build --file ./Dockerfile -t aquastatistic_prod .
 
-//need to use a volume to share the file
+//Tested on Mac OS , change the /tmp directory to your directory
 $docker run -it -v /tmp:/root aquastatistic_prod AddFile '{"path":"../README.md","size":2343,"is_binary":false}'
 $docker run -it -v /tmp:/root aquastatistic_prod GetStats
+
+//to remove the file in the end of the work add flag --rm true
+$docker run -it -v /tmp:/root aquastatistic_prod GetStats --rm true 
+
 ```
-
-
-
 # Required Functions
 
 **AddFile(metadata FileMetadata) error**

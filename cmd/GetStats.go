@@ -17,12 +17,12 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
@@ -41,34 +41,35 @@ func GetStatsCmd() *cobra.Command {
 	Percentage of text files of all files received
 	List of latest 10 file paths received.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("GetStats called")
-
-			//fmt.Printf("remove file flag is %s\n", cmd.Flag("rm").Value)
 
 			fileStats := GetStats()
+			color.Info.Prompt("JSON Format:")
 
-			cmd.Println("JSON format : \n", fileStats)
-			//return jsonStruct
+			//color.Cyan.Printf(fileStats + "\n") //cnnot unit test color
+			cmd.Println(fileStats)
+
+			if rm == "true" {
+
+				color.Warn.Println("Removing the filesMetadata ...")
+				e := os.Remove(METADATA_FILE_PATH)
+
+				if e != nil {
+					color.Error.Println("Removing the file failed")
+					color.Info.Prompt(e.Error())
+				}
+
+			}
 			return nil
 		},
 	}
-	getStatsCmd.Flags().StringVar(&rm, "rm", "", "getStatsCmd clear MetaData file")
+
 	return getStatsCmd
 }
 
 func init() {
 	getStatsCmd := GetStatsCmd()
 	rootCmd.AddCommand(getStatsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// GetStatsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// GetStatsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	getStatsCmd.Flags().StringVar(&rm, "rm", "", "getStatsCmd clear MetaData file")
 }
 
 func GetStats() string {
@@ -82,13 +83,9 @@ func GetStats() string {
 		log.Fatal(err.Error())
 	}
 
-	fmt.Println("GetStats", "Successfully Opened FilesMetadata.json")
-
 	filesMetadata := []FileMetadata{}
 
 	json.Unmarshal(byteValue, &filesMetadata)
-
-	fmt.Println("GetStats ,filesMetadata structs : ", filesMetadata)
 
 	var sumOfSizes float64
 	//Number of files received
