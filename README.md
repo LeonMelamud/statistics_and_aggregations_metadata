@@ -14,8 +14,7 @@ $ go test
 
 **cd to root project folder**
 ```bash
-$go install aquaStatistic
-$go run aquaStatistic --help // show the commands
+$go run aquaStatistic // show the commands
 ```
 **addFile with path,size,is_binary**
 ```bash
