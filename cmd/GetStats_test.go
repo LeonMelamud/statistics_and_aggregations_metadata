@@ -44,9 +44,10 @@ func Test_GetStats(t *testing.T) {
 	}
 	fmt.Println("cmd result: ", string(out))
 
-	if fileStats.NumFiles != 12 && fileStats.LargestFile.
-		Path != ".12.json" && fileStats.LargestFile.Size != 121212 && fileStats.AverageFileSize != 31944 && fileStats.MostFrequentExt.
-		Extension != ".md" && fileStats.MostFrequentExt.NumOccurrences != 3 && fileStats.TextPercentage != 0 && len(fileStats.MostRecentPaths) != 10 {
+	//if one of them is not the same as result it fail
+	if fileStats.NumFiles != 12 || fileStats.LargestFile.
+		Path != ".12.json" || fileStats.LargestFile.Size != 121212 || fileStats.AverageFileSize != 31944 || fileStats.MostFrequentExt.
+		Extension != ".cer" || fileStats.MostFrequentExt.NumOccurrences != 3 || fileStats.TextPercentage != 0 || len(fileStats.MostRecentPaths) != 10 {
 
 		t.Fatal("fileStats Data is not correct, got : " + string(out))
 	}

@@ -57,7 +57,7 @@ func addFile(t *testing.T, rm string, args []string) {
 		t.Fatalf(err.Error())
 	}
 	//check that the struct from the file is same as expected
-	if jsonStruct[0].IsBinary != false && jsonStruct[0].Path != "1.txt" && jsonStruct[0].Size != 1111 {
+	if jsonStruct[0].IsBinary != false || jsonStruct[0].Path != "1.txt" || jsonStruct[0].Size != 1111 {
 		t.Fatalf("jsonStruct is no as expected ")
 
 	}
