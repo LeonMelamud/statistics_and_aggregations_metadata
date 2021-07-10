@@ -62,7 +62,7 @@ func addFile(t *testing.T, rm string, args []string) {
 
 	}
 
-	if rm == "" {
+	if rm != "no" {
 		e := os.Remove(METADATA_FILE_PATH)
 
 		if e != nil {
