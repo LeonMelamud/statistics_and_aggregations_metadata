@@ -19,7 +19,7 @@ RUN go build -o ./bin/aquastatistic .
 ##################################
 
 # parent image
-FROM alpine:3.12.2
+FROM alpine:3.19.4
 
 # workspace directory
 WORKDIR /app
